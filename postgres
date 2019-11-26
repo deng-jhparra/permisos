@@ -1,16 +1,22 @@
+---- PROCEDIMIENTO PARA OTORGAR PERMISOS SOBRE UNA BASE DE DATOS
 DO $$
-DECLARE usuario VARCHAR(100) := 'anhaly_alvarez';
+DECLARE usuarios VARCHAR(100)[] := array ['usuario1','usuario2','usuario3'];
+DECLARE usuario VARCHAR(100) := NULL;
 DECLARE entidad_esquema VARCHAR(100) := NULL;
 DECLARE nombre_esquema  RECORD;
 DECLARE esquema  CURSOR FOR SELECT DISTINCT table_schema 
 			  FROM information_schema.tables
 			  WHERE table_schema NOT IN ('pg_catalog','information_schema') and table_type = 'BASE TABLE';
 BEGIN
+  FOR login IN array_lower(usuarios, 1)..array_upper(usuarios, 1) LOOP
+    usuario := usuarios[login];
     FOR nombre_esquema IN esquema LOOP
 	EXECUTE format('GRANT USAGE  ON SCHEMA %s  TO %s;', nombre_esquema.table_schema,usuario);
 	EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA  %s  TO %s;', nombre_esquema.table_schema,usuario);
 	EXECUTE format('GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA %s TO %s;', nombre_esquema.table_schema,usuario);
 	EXECUTE format('GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA %s TO %s;', nombre_esquema.table_schema,usuario);
     END LOOP;
+  END LOOP;
 END;
 $$
+---- 
