@@ -1,0 +1,16 @@
+DO $$
+DECLARE usuario VARCHAR(100) := 'anhaly_alvarez';
+DECLARE entidad_esquema VARCHAR(100) := NULL;
+DECLARE nombre_esquema  RECORD;
+DECLARE esquema  CURSOR FOR SELECT DISTINCT table_schema 
+			  FROM information_schema.tables
+			  WHERE table_schema NOT IN ('pg_catalog','information_schema') and table_type = 'BASE TABLE';
+BEGIN
+    FOR nombre_esquema IN esquema LOOP
+	EXECUTE format('GRANT USAGE  ON SCHEMA %s  TO %s;', nombre_esquema.table_schema,usuario);
+	EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA  %s  TO %s;', nombre_esquema.table_schema,usuario);
+	EXECUTE format('GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA %s TO %s;', nombre_esquema.table_schema,usuario);
+	EXECUTE format('GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA %s TO %s;', nombre_esquema.table_schema,usuario);
+    END LOOP;
+END;
+$$
